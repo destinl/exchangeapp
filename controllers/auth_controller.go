@@ -47,3 +47,36 @@ func Register(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"token": toekn})
 }
+
+func Login(ctx *gin.Context) {
+	var input struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+
+	if err := global.Db.Where("username = ?", input.Username).First(&user).Error; err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	if !utils.CheckPassword(input.Password, user.Password) {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	toekn, err := utils.GenerateJWT(user.Username)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"token": toekn})
+}

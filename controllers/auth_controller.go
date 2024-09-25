@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"exchangeapp/global"
 	"exchangeapp/models"
 	"exchangeapp/utils"
 	"net/http"
@@ -24,4 +25,25 @@ func Register(ctx *gin.Context) {
 	}
 
 	user.Password = hashPwd
+
+	toekn, err := utils.GenerateJWT(user.Username)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 创建表
+	if err := global.Db.AutoMigrate(&user); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	//创建数据
+	if err := global.Db.Create(&user).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"token": toekn})
 }

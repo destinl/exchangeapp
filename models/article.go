@@ -6,5 +6,4 @@ type Article struct {
 	gorm.Model
 	Title   string `binding:"required"`
 	Content string `binding:"required"`
-	Likes   int    `gorm:"default:0"`
 }

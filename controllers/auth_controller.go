@@ -10,6 +10,11 @@ import (
 )
 
 func Register(ctx *gin.Context) {
+	//请求体一定要是json格式，如
+	// {
+	// 	"username":"admin1", // 大小写无所谓
+	// 	"password":"admin1"
+	// }
 	var user models.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
